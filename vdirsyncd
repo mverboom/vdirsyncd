@@ -1,0 +1,45 @@
+#!/bin/bash
+interval=300               # interval between syncs
+keyfile=~/.vdirsyncd.gpg   # GPG encrypted sync password
+lockfile=~/.vdirsyncd.pid  # PID file
+logfile=~/.vdirsyncd.log   # Log file
+
+log() {
+   echo "$( date "+%Y/%m/%d %H:%M:%S" ) $*" >> $logfile
+}
+
+start() {
+   test -f $lockfile && test $(pgrep -c $(basename $0)) -gt 1 && { echo "$0 is already running."; exit 1; }
+   password=$(gpg -d $keyfile 2>/dev/null)
+   test $? -ne 0 && { echo "Error gettings password."; exit 1; }
+   echo "Starting vdirsyncer every $interval seconds."
+   ( echo $BASHPID > $lockfile
+   log "Starting sync every $interval seconds."
+   trap "log "Stopping"; rm -f $lockfile" EXIT
+   while test 1
+   do
+      output=$(vdirsyncer -v WARNING sync <<< $password 2>&1)
+      test $? -ne 0 && log "Problem syncing. output: $output"
+      sleep $interval
+   done ) &
+}
+
+usage() {
+   echo "$0 (start|stop|status)"
+   exit 1
+}
+
+case "$1" in
+"start")
+   start
+;;
+"stop")
+   test -f $lockfile && test $(pgrep -c $(basename $0)) -gt 1 && { echo "Stopping." ; kill $(cat $lockfile); }
+;;
+"status")
+   test -f $lockfile && test $(pgrep -c $(basename $0)) -gt 1 && { echo "Running.";} || { echo "Stopped.";}
+;;
+*)
+   usage
+;;
+esac
