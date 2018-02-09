@@ -32,30 +32,30 @@ You can store it like:
 
 vdirsyncd has a couple of options and actions.
 
-`start
+`start`
 
 Start vdirsyncd. This will check if it is already running. Default it will
 run vdirsyncer every 300 seconds.
 
-`stop
+`stop`
 
 Stop vdirsyncd.
 
-`status
+`status`
 
 Check if vdirsyncd is running. If it is running the return value will be 0. If it
 is stopped the return value will be 1.
 
-`-i <interval>
+`-i <interval>`
 
 When starting vdirsyncer will be run every 300 seconds. This option will change
 the interval to the specified value (in seconds).
 
-`-q
+`-q`
 
 Produce as little output as possible.
 
-`-h
+`-h`
 
 Show the help message.
 
@@ -68,5 +68,5 @@ Start vdirsyncd and run vdirsyncer every 3 minutes.
 When logging in on the server `shell` start vdirsyncer and produce as little output
 as possible (useful in .bash_profile).
 
-`test "$HOSTNAME" = "shell" && vdirsyncd -q start
+`test "$HOSTNAME" = "shell" && vdirsyncd -q start`
 
