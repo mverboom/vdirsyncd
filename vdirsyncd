@@ -13,6 +13,21 @@ msg() {
   test $verbose -gt 0 && echo "$*"
 }
 
+discover() {
+   test -f $lockfile && test $(pgrep -c $(basename $0)) -gt 1 && { msg "$0 is already running."; exit 1; }
+   password=$(gpg -d $keyfile 2>/dev/null)
+   test $? -ne 0 && { msg "Error gettings password."; exit 1; }
+   pairs=$(grep pair ~/.vdirsyncer/config | awk '{print $2}' | tr -d [\[])
+   msg "Discovering..."
+   ( echo $BASHPID > $lockfile
+   msg "Starting discovery of pairs: $pairs"
+   trap "log "Stopping"; rm -f $lockfile" EXIT
+
+   output=$(vdirsyncer -v WARNING discover $pairs <<< $password 2>&1)
+   test $? -ne 0 && log "Problem running discovery. output: $output"
+   ) &
+}
+
 start() {
    test -f $lockfile && test $(pgrep -c $(basename $0)) -gt 1 && { msg "$0 is already running."; exit 1; }
    password=$(gpg -d $keyfile 2>/dev/null)
@@ -33,9 +48,10 @@ usage() {
    echo "vdirsyncd [OPTION] <ACTION>"
    echo
    echo "Actions:"
-   echo "  start   Start if not yet running"
-   echo "  status  Check the current running status"
-   echo "  stop    Stop if running"
+   echo "  discover Run discover for configured pairs"
+   echo "  start    Start if not yet running"
+   echo "  status   Check the current running status"
+   echo "  stop     Stop if running"
    echo
    echo "Options:"
    echo "  -i <interval>  Use the specified interval instead of default"
@@ -57,6 +73,9 @@ do
    "-i")
       shift
       interval=$1
+   ;;
+   "discover")
+      discover
    ;;
    "start")
       start
