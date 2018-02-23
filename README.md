@@ -32,6 +32,11 @@ You can store it like:
 
 vdirsyncd has a couple of options and actions.
 
+`discover`
+
+Run a vdirsyncer discovery action, this is required to setup any new pairs or 
+when you change something in vdirsyncer's config file
+
 `start`
 
 Start vdirsyncd. This will check if it is already running. Default it will
